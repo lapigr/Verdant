@@ -74,7 +74,7 @@ namespace Verdant
             // last min update sesh
             Debug.WriteLine("updating session");
             var sesRes = await webClient.GetAsync("https://sso.nexon.game.naver.com/Ajax/Default.aspx?_vb=UpdateSession");
-            Debug.WriteLine(await sesRes.Content.ReadAsStringAsync());
+      //      Debug.WriteLine(await sesRes.Content.ReadAsStringAsync());
 
             Debug.WriteLine("msgenc update");
             // msgenc
@@ -94,9 +94,10 @@ namespace Verdant
 			if(data.Contains("\"Code\":5"))
 			{
 				//"session expired try logging in again"
-				Debug.WriteLine("relogging expired session and crossing fingers");
-                await Account.WebClient.GetAsync("http://nxgamechanneling.nexon.game.naver.com/login/loginproc.aspx?gamecode=589824");
-			}
+				Debug.WriteLine("token expired, refreshOrDie");
+			    HttpResponseMessage ret = await Account.WebClient.GetAsync("http://nxgamechanneling.nexon.game.naver.com/login/loginproc.aspx?gamecode=589824");
+			    ret.EnsureSuccessStatusCode();
+            }
             else if (!data.Contains("\"Code\":1"))
             {
                 if (firstTry && Account.Preloaded)
@@ -126,9 +127,9 @@ namespace Verdant
             await webClient.GetAsync("https://maplestory.nexon.game.naver.com/News/CashShop"); // the home page may redirect too
         }
 
-        private Regex charRepRegex = new Regex("<dd class=\"login_charname\">\\s+<a href=\".+?\" target=\"_blank\">(.+?)님<\\/a>\\s+<\\/dd>");
+        private Regex charRepRegex = new Regex("<span class=\"sub_user_name\">(\\w+)");
         private Regex launchWIDRegex = new Regex("PLATFORM\\.LaunchGame\\('(\\d+)'\\)");
-        private Regex charImgRegex = new Regex("<span class=\"login_char\"><img src=\"(.*?)\" onerror=");
+        private Regex charImgRegex = new Regex("<span class=\"sub_login_char\"><img src=\"(.*?)\"");
         private async Task<bool> getCurrentMaple()
         {
             HttpResponseMessage res = await webClient.GetAsync("https://maplestory.nexon.game.naver.com/News/CashShop");
